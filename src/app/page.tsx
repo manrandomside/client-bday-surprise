@@ -5,6 +5,7 @@ import FloatingHearts from "@/components/FloatingHearts";
 import MatchingGame from "@/components/MatchingGame";
 import PhotoUpload from "@/components/PhotoUpload";
 import SwipeGame from "@/components/SwipeGame";
+import Celebration from "@/components/Celebration";
 
 function PhaseRouter() {
   const { currentPhase } = useGame();
@@ -17,11 +18,7 @@ function PhaseRouter() {
     case 3:
       return <SwipeGame />;
     case 4:
-      return (
-        <div className="min-h-screen flex items-center justify-center">
-          <p className="text-rose-500 text-xl">Phase 4 - Coming Soon</p>
-        </div>
-      );
+      return <Celebration />;
     default:
       return null;
   }
