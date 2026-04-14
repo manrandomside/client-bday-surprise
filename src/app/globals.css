@@ -1,6 +1,12 @@
 @import "tailwindcss";
 
 body {
-  background-color: #fdf2f8;
+  background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #fff1f2 100%);
   color: #1f2937;
+  min-height: 100vh;
+}
+
+::selection {
+  background-color: #fda4af;
+  color: white;
 }
