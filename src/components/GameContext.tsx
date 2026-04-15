@@ -9,8 +9,11 @@ interface GameState {
   uploadedPhoto: string | null;
   targetPhoto: string;
   targetName: string;
+  senderName: string;
+  isStarted: boolean;
   setCurrentPhase: (phase: Phase) => void;
   setUploadedPhoto: (photo: string | null) => void;
+  setIsStarted: (started: boolean) => void;
 }
 
 const GameContext = createContext<GameState | undefined>(undefined);
@@ -18,6 +21,7 @@ const GameContext = createContext<GameState | undefined>(undefined);
 export function GameProvider({ children }: { children: ReactNode }) {
   const [currentPhase, setCurrentPhase] = useState<Phase>(1);
   const [uploadedPhoto, setUploadedPhoto] = useState<string | null>(null);
+  const [isStarted, setIsStarted] = useState(false);
 
   return (
     <GameContext.Provider
@@ -26,8 +30,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
         uploadedPhoto,
         targetPhoto: "/game-photos/match4.png",
         targetName: "Dian Nafisa",
+        senderName: "Pacarmu",
+        isStarted,
         setCurrentPhase,
         setUploadedPhoto,
+        setIsStarted,
       }}
     >
       {children}

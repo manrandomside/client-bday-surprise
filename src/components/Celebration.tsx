@@ -4,8 +4,146 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGame } from "./GameContext";
 import Confetti from "./Confetti";
+import PhotoSlideshow from "./PhotoSlideshow";
 
 type CelebrationStep = "match" | "reveal" | "greeting";
+
+interface TouchHeart {
+  id: number;
+  x: number;
+  y: number;
+}
+
+function InteractiveTouchHearts() {
+  const [hearts, setHearts] = useState<TouchHeart[]>([]);
+
+  const handleClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    const point =
+      "touches" in e
+        ? { x: e.touches[0].clientX, y: e.touches[0].clientY }
+        : { x: e.clientX, y: e.clientY };
+    const id = Date.now() + Math.random();
+    setHearts((prev) => [...prev, { id, x: point.x, y: point.y }]);
+    setTimeout(() => {
+      setHearts((prev) => prev.filter((h) => h.id !== id));
+    }, 1500);
+  }, []);
+
+  return (
+    <div
+      className="fixed inset-0 z-30 pointer-events-auto"
+      onClick={handleClick}
+      onTouchStart={handleClick}
+      style={{ touchAction: "manipulation" }}
+    >
+      <AnimatePresence>
+        {hearts.map((heart) => (
+          <motion.div
+            key={heart.id}
+            initial={{ scale: 0, opacity: 1, x: heart.x - 15, y: heart.y - 15 }}
+            animate={{ scale: [0, 1.2, 1], opacity: [1, 1, 0], y: heart.y - 80 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.2, ease: "easeOut" }}
+            className="fixed text-rose-400 pointer-events-none text-3xl"
+          >
+            &#9829;
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function VirtualHug() {
+  const [isHugging, setIsHugging] = useState(false);
+
+  return (
+    <>
+      <motion.button
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.97 }}
+        onClick={() => setIsHugging(true)}
+        className="mt-3 px-6 py-3 bg-gradient-to-r from-rose-400 to-pink-500 rounded-2xl shadow-md text-white font-semibold text-sm sm:text-base cursor-pointer flex items-center gap-2"
+      >
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+          />
+        </svg>
+        Kirim Pelukan Virtual
+      </motion.button>
+
+      <AnimatePresence>
+        {isHugging && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            className="fixed inset-0 z-[90] flex flex-col items-center justify-center bg-gradient-to-br from-rose-400/90 via-pink-500/90 to-fuchsia-500/90"
+            style={{ backdropFilter: "blur(20px)" }}
+            onClick={() => setIsHugging(false)}
+          >
+            {/* Hug animation - arms wrapping */}
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: [0, 1.3, 1] }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="relative"
+            >
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <svg className="w-32 h-32 sm:w-40 sm:h-40 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                </svg>
+              </motion.div>
+
+              {/* Radiating rings */}
+              {[0, 1, 2].map((i) => (
+                <motion.div
+                  key={i}
+                  className="absolute inset-0 rounded-full border-2 border-white/30"
+                  style={{ margin: -20 - i * 20 }}
+                  animate={{ scale: [1, 2], opacity: [0.5, 0] }}
+                  transition={{
+                    duration: 1.5,
+                    delay: i * 0.3,
+                    repeat: Infinity,
+                    ease: "easeOut",
+                  }}
+                />
+              ))}
+            </motion.div>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="text-white text-xl sm:text-2xl font-bold mt-6 text-center px-4"
+            >
+              Pelukan hangat untukmu!
+            </motion.p>
+
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1 }}
+              className="text-white/70 text-sm mt-4"
+            >
+              Ketuk di mana saja untuk kembali
+            </motion.p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
 
 function TypewriterText({
   text,
@@ -75,7 +213,7 @@ const BIRTHDAY_MESSAGES = [
 ];
 
 export default function Celebration() {
-  const { uploadedPhoto, targetPhoto, targetName } = useGame();
+  const { uploadedPhoto, targetPhoto, targetName, senderName } = useGame();
   const [step, setStep] = useState<CelebrationStep>("match");
   const [visibleMessages, setVisibleMessages] = useState(0);
   const [showSignature, setShowSignature] = useState(false);
@@ -486,7 +624,7 @@ export default function Celebration() {
                   className="mt-6 flex flex-col items-center"
                 >
                   <p className="text-rose-400 text-sm italic">
-                    Dari pacarmu yang paling sayang,
+                    Dari {senderName} yang paling sayang,
                   </p>
                   <motion.div
                     animate={{ scale: [1, 1.15, 1] }}
@@ -501,12 +639,26 @@ export default function Celebration() {
                       <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                     </svg>
                   </motion.div>
+
+                  {/* Photo Slideshow & Virtual Hug */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="flex flex-col items-center mt-4"
+                  >
+                    <PhotoSlideshow />
+                    <VirtualHug />
+                  </motion.div>
                 </motion.div>
               )}
             </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Interactive touch hearts */}
+      {step === "greeting" && <InteractiveTouchHearts />}
 
       {/* Glowing orbs background */}
       {step === "greeting" && (

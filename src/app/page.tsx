@@ -1,7 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { GameProvider, useGame } from "@/components/GameContext";
 import FloatingHearts from "@/components/FloatingHearts";
+import LoadingScreen from "@/components/LoadingScreen";
+import LandingScreen from "@/components/LandingScreen";
+import MusicToggle from "@/components/MusicToggle";
 import MatchingGame from "@/components/MatchingGame";
 import PhotoUpload from "@/components/PhotoUpload";
 import SwipeGame from "@/components/SwipeGame";
@@ -88,12 +92,40 @@ function PhaseRouter() {
   );
 }
 
+function GameContent() {
+  const { isStarted } = useGame();
+  const [isLoading, setIsLoading] = useState(true);
+
+  return (
+    <>
+      <FloatingHearts />
+      <MusicToggle />
+
+      <AnimatePresence mode="wait">
+        {isLoading ? (
+          <LoadingScreen key="loading" onComplete={() => setIsLoading(false)} />
+        ) : !isStarted ? (
+          <LandingScreen key="landing" />
+        ) : (
+          <motion.div
+            key="game"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <PhaseIndicator />
+            <PhaseRouter />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
 export default function Home() {
   return (
     <GameProvider>
-      <FloatingHearts />
-      <PhaseIndicator />
-      <PhaseRouter />
+      <GameContent />
     </GameProvider>
   );
 }
