@@ -60,16 +60,16 @@ const BIRTHDAY_MESSAGES = [
     className: "text-rose-700 text-base sm:text-lg leading-relaxed mb-4",
   },
   {
-    text: "Kamu itu lebih dari sekadar teman. Kamu adalah orang yang selalu bikin hari-hariku lebih berwarna dan bermakna.",
+    text: "Kamu adalah orang yang paling spesial di hidupku. Setiap hari bersamamu selalu terasa lebih berwarna dan bermakna.",
     className:
       "text-rose-800 text-lg sm:text-xl font-semibold leading-relaxed mb-4",
   },
   {
-    text: "Semoga di tahun ini semua impian dan harapanmu tercapai. Semoga selalu bahagia, sehat, dan dikelilingi orang-orang yang menyayangimu.",
+    text: "Semoga di tahun ini semua impian dan harapan kita berdua tercapai. Semoga kamu selalu bahagia, sehat, dan tahu bahwa aku akan selalu ada di sisimu.",
     className: "text-rose-600 text-base sm:text-lg leading-relaxed mb-4",
   },
   {
-    text: "Terima kasih sudah menjadi bagian terindah dalam hidupku.",
+    text: "Terima kasih sudah menjadi kekasih terbaik dan bagian terindah dalam hidupku. Aku sayang kamu.",
     className: "text-rose-700 text-lg sm:text-xl font-bold",
   },
 ];
@@ -486,7 +486,7 @@ export default function Celebration() {
                   className="mt-6 flex flex-col items-center"
                 >
                   <p className="text-rose-400 text-sm italic">
-                    Dengan penuh cinta dan doa terbaik,
+                    Dari pacarmu yang paling sayang,
                   </p>
                   <motion.div
                     animate={{ scale: [1, 1.15, 1] }}
