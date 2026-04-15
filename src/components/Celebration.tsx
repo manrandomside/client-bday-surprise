@@ -14,44 +14,35 @@ interface TouchHeart {
   y: number;
 }
 
-function InteractiveTouchHearts() {
+function useInteractiveTouchHearts() {
   const [hearts, setHearts] = useState<TouchHeart[]>([]);
 
-  const handleClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    const point =
-      "touches" in e
-        ? { x: e.touches[0].clientX, y: e.touches[0].clientY }
-        : { x: e.clientX, y: e.clientY };
+  const spawnHeart = useCallback((e: React.MouseEvent) => {
     const id = Date.now() + Math.random();
-    setHearts((prev) => [...prev, { id, x: point.x, y: point.y }]);
+    setHearts((prev) => [...prev, { id, x: e.clientX, y: e.clientY }]);
     setTimeout(() => {
       setHearts((prev) => prev.filter((h) => h.id !== id));
     }, 1500);
   }, []);
 
-  return (
-    <div
-      className="fixed inset-0 z-30 pointer-events-auto"
-      onClick={handleClick}
-      onTouchStart={handleClick}
-      style={{ touchAction: "manipulation" }}
-    >
-      <AnimatePresence>
-        {hearts.map((heart) => (
-          <motion.div
-            key={heart.id}
-            initial={{ scale: 0, opacity: 1, x: heart.x - 15, y: heart.y - 15 }}
-            animate={{ scale: [0, 1.2, 1], opacity: [1, 1, 0], y: heart.y - 80 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.2, ease: "easeOut" }}
-            className="fixed text-rose-400 pointer-events-none text-3xl"
-          >
-            &#9829;
-          </motion.div>
-        ))}
-      </AnimatePresence>
-    </div>
+  const heartsLayer = (
+    <AnimatePresence>
+      {hearts.map((heart) => (
+        <motion.div
+          key={heart.id}
+          initial={{ scale: 0, opacity: 1, x: heart.x - 15, y: heart.y - 15 }}
+          animate={{ scale: [0, 1.2, 1], opacity: [1, 1, 0], y: heart.y - 80 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.2, ease: "easeOut" }}
+          className="fixed z-30 text-rose-400 pointer-events-none text-3xl"
+        >
+          &#9829;
+        </motion.div>
+      ))}
+    </AnimatePresence>
   );
+
+  return { spawnHeart, heartsLayer };
 }
 
 function VirtualHug() {
@@ -217,6 +208,7 @@ export default function Celebration() {
   const [step, setStep] = useState<CelebrationStep>("match");
   const [visibleMessages, setVisibleMessages] = useState(0);
   const [showSignature, setShowSignature] = useState(false);
+  const { spawnHeart, heartsLayer } = useInteractiveTouchHearts();
 
   const handleMessageComplete = useCallback(() => {
     setVisibleMessages((prev) => {
@@ -229,8 +221,12 @@ export default function Celebration() {
   }, []);
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center px-4 py-8 overflow-hidden">
+    <div
+      className="relative min-h-screen flex flex-col items-center justify-center px-4 py-8 overflow-hidden"
+      onClick={step === "greeting" ? spawnHeart : undefined}
+    >
       <Confetti count={step === "greeting" ? 100 : 60} />
+      {step === "greeting" && heartsLayer}
 
       <AnimatePresence mode="wait">
         {/* Step 1: Match animation */}
@@ -645,7 +641,8 @@ export default function Celebration() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 }}
-                    className="flex flex-col items-center mt-4"
+                    className="relative z-20 flex flex-col items-center mt-4"
+                    onClick={(e) => e.stopPropagation()}
                   >
                     <PhotoSlideshow />
                     <VirtualHug />
@@ -656,9 +653,6 @@ export default function Celebration() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Interactive touch hearts */}
-      {step === "greeting" && <InteractiveTouchHearts />}
 
       {/* Glowing orbs background */}
       {step === "greeting" && (
