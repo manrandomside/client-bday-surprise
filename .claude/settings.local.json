@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(find /c/Users/Manrandomside/ProjectWebDev/next/client-bday-surprise -not -path */node_modules/* -not -path */.next/* -not -path */.git/* -type d)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(ls:*)",
+      "Bash(\"C:/Users/Manrandomside/ProjectWebDev/next/client-bday-surprise/public/music/README.txt\")"
     ]
   }
 }
