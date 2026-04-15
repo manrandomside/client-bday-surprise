@@ -334,7 +334,7 @@ export default function MatchingGame() {
                 type: "spring",
                 stiffness: 200,
                 damping: 15,
-                x: { duration: 0.4 },
+                x: { type: "tween", duration: 0.4 },
               }}
               className="relative cursor-pointer"
               style={{ perspective: 600, aspectRatio: "1" }}

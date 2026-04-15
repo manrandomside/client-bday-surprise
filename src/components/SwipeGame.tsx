@@ -157,6 +157,7 @@ function RunawayButton({
           type: "spring",
           stiffness: 300,
           damping: 20,
+          rotate: { type: "tween", duration: 0.4 },
         }}
         onHoverStart={handleInteraction}
         onTouchStart={(e) => {
