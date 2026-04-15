@@ -75,7 +75,7 @@ const BIRTHDAY_MESSAGES = [
 ];
 
 export default function Celebration() {
-  const { uploadedPhoto, targetPhoto } = useGame();
+  const { uploadedPhoto, targetPhoto, targetName } = useGame();
   const [step, setStep] = useState<CelebrationStep>("match");
   const [visibleMessages, setVisibleMessages] = useState(0);
   const [showSignature, setShowSignature] = useState(false);
@@ -210,7 +210,7 @@ export default function Celebration() {
                   transition={{ delay: 1.2 }}
                   className="text-center text-rose-600 text-xs sm:text-sm font-medium mt-2"
                 >
-                  Dia
+                  {targetName}
                 </motion.p>
               </motion.div>
             </div>
@@ -277,7 +277,7 @@ export default function Celebration() {
               transition={{ delay: 0.8 }}
               className="text-rose-600 text-base sm:text-lg mb-2 leading-relaxed"
             >
-              Ini bukan aplikasi cari jodoh beneran kok...
+              Dia bukan CEO Google beneran kok...
             </motion.p>
 
             <motion.p
@@ -286,7 +286,7 @@ export default function Celebration() {
               transition={{ delay: 1.2 }}
               className="text-rose-500 text-base sm:text-lg mb-8 leading-relaxed"
             >
-              Tapi ada sesuatu yang lebih spesial menunggumu!
+              Tapi ada sesuatu yang jauh lebih spesial dari gaji 1M per bulan!
             </motion.p>
 
             <motion.button
@@ -361,7 +361,7 @@ export default function Celebration() {
               }}
               className="text-3xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-pink-500 to-fuchsia-500 mb-4"
             >
-              Selamat Ulang Tahun!
+              Selamat Ulang Tahun, {targetName}!
             </motion.h1>
 
             {/* Decorative line */}

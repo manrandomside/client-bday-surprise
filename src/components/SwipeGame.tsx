@@ -6,6 +6,7 @@ import {
   AnimatePresence,
   useMotionValue,
   useTransform,
+  type TargetAndTransition,
 } from "framer-motion";
 import { useGame } from "./GameContext";
 
@@ -16,55 +17,94 @@ interface Profile {
   color: string;
   emoji: string;
   isTarget: boolean;
-  image?: string;
+  image: string;
+  rejectMessage: string;
+  rejectEmoji: string;
 }
 
-const FAKE_PROFILES: Omit<Profile, "isTarget">[] = [
+const PROFILES_DATA: Profile[] = [
   {
-    name: "Budi Setiawan",
-    age: 35,
-    bio: "Hobi: Mengoleksi sandal jepit dan berdebat dengan kucing tetangga.",
+    name: "Mas Amba Loh Yah",
+    age: 25,
+    bio: "Hobi nongkrong di warung sambil sok filosofis. Sering ngomong 'amba loh yah' tanpa alasan jelas. Kalau kamu suka cowok misterius tapi agak aneh, ini orangnya.",
     color: "from-blue-400 to-cyan-300",
-    emoji: "B",
-  },
-  {
-    name: "Agus Maulana",
-    age: 42,
-    bio: "Profesional tidur siang. Bisa ngorok dalam 7 bahasa.",
-    color: "from-amber-400 to-orange-300",
     emoji: "A",
+    isTarget: false,
+    image: "/game-photos/match1.png",
+    rejectMessage: "AMBA SEDIH :(",
+    rejectEmoji: "T_T",
   },
   {
-    name: "Joko Santoso",
-    age: 28,
-    bio: "Bukan presiden, cuma tukang bakso yang kebetulan ganteng.",
+    name: "Windut Kicidut",
+    age: 22,
+    bio: "Self-proclaimed 'content creator' padahal follower cuma 47 (30-nya akun bot). Jago masak tapi cuma bisa bikin Indomie. Mencari seseorang yang mau dengerin curhatnya 24/7.",
+    color: "from-amber-400 to-orange-300",
+    emoji: "W",
+    isTarget: false,
+    image: "/game-photos/match2.png",
+    rejectMessage: "WINDUT NGAMBEK!",
+    rejectEmoji: ">:(",
+  },
+  {
+    name: "Zigma",
+    age: 99,
+    bio: "Sigma male grindset. Bangun jam 3 pagi, mandi air es, lari 10 km, terus tidur lagi. Portfolio: 0 pacar, 0 pengalaman, tapi confidence level 999. Jangan tanya kenapa umurnya 99.",
     color: "from-emerald-400 to-teal-300",
-    emoji: "J",
+    emoji: "Z",
+    isTarget: false,
+    image: "/game-photos/match3.png",
+    rejectMessage: "ZIGMA GAK BUTUH KAMU",
+    rejectEmoji: "B)",
+  },
+  {
+    name: "CEO Google",
+    age: 23,
+    bio: "Bukan Sundar Pichai, tapi jauh lebih keren. Punya senyum yang bisa bikin server Google down. Kalau kamu nolak, sayang banget... Gaji 1 milyar per bulan loh~",
+    color: "from-rose-400 to-pink-500",
+    emoji: "?",
+    isTarget: true,
+    image: "/game-photos/match4.png",
+    rejectMessage: "",
+    rejectEmoji: "",
   },
 ];
 
-const RUNAWAY_MESSAGES = [
-  "Hehe, kena deh!",
-  "Gak bisa dong~",
-  "Coba lagi!",
-  "Terlalu lambat!",
-  "Nggak semudah itu!",
-  "Wkwk, hampir!",
-  "Cepetan dikit!",
-  "Mau kemana kamu?",
+const RUNAWAY_MESSAGES_TARGET = [
+  "Nolak CEO Google?!",
+  "Gaji 1M per bulan loh!",
+  "Kamu yakin banget?!",
+  "Pikir lagi deh...",
+  "Rugi banget sumpah!",
+  "Dia udah suka kamu loh!",
+  "JANGAN DITOLAK!",
+  "Kamu jahat banget!",
 ];
+
+interface RejectReaction {
+  profileIndex: number;
+  isActive: boolean;
+}
 
 function RunawayButton({
   label,
   variant,
+  messages,
 }: {
   label: string;
   variant: "interested" | "not-interested";
+  messages?: string[];
 }) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [runCount, setRunCount] = useState(0);
   const [isShaking, setIsShaking] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
+
+  const displayMessages = messages || [
+    "Hehe, kena deh!",
+    "Gak bisa dong~",
+    "Coba lagi!",
+    "Terlalu lambat!",
+  ];
 
   const handleInteraction = useCallback(() => {
     const maxOffset = 150;
@@ -102,7 +142,7 @@ function RunawayButton({
             exit={{ opacity: 0, y: -30 }}
             className="absolute left-1/2 -translate-x-1/2 -top-6 text-rose-500 text-xs font-medium whitespace-nowrap z-10"
           >
-            {RUNAWAY_MESSAGES[runCount % RUNAWAY_MESSAGES.length]}
+            {displayMessages[runCount % displayMessages.length]}
           </motion.p>
         )}
       </AnimatePresence>
@@ -126,6 +166,167 @@ function RunawayButton({
         className={`px-8 py-3 rounded-full font-semibold cursor-pointer select-none ${baseClass}`}
       >
         {label}
+      </motion.button>
+    </div>
+  );
+}
+
+function ShrinkingButton({
+  label,
+  onClick,
+}: {
+  label: string;
+  onClick: () => void;
+}) {
+  const [clickCount, setClickCount] = useState(0);
+
+  const handleClick = useCallback(() => {
+    if (clickCount < 2) {
+      setClickCount((prev) => prev + 1);
+    } else {
+      onClick();
+    }
+  }, [clickCount, onClick]);
+
+  const scale = Math.max(0.4, 1 - clickCount * 0.25);
+  const messages = [
+    "",
+    "Yakin nih?",
+    "Beneran yakin?!",
+  ];
+
+  return (
+    <div className="relative" style={{ minHeight: 60 }}>
+      <AnimatePresence>
+        {clickCount > 0 && (
+          <motion.p
+            key={clickCount}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: -20 }}
+            exit={{ opacity: 0, y: -30 }}
+            className="absolute left-1/2 -translate-x-1/2 -top-6 text-rose-500 text-xs font-medium whitespace-nowrap z-10"
+          >
+            {messages[clickCount]}
+          </motion.p>
+        )}
+      </AnimatePresence>
+      <motion.button
+        animate={{ scale }}
+        transition={{ type: "spring", stiffness: 300, damping: 15 }}
+        whileTap={{ scale: scale * 0.9 }}
+        onClick={handleClick}
+        className="px-8 py-3 bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-lg shadow-gray-300/40 rounded-full font-semibold cursor-pointer"
+      >
+        {label}
+      </motion.button>
+    </div>
+  );
+}
+
+function SpinningButton({
+  label,
+  onClick,
+}: {
+  label: string;
+  onClick: () => void;
+}) {
+  const [spinning, setSpinning] = useState(false);
+  const [clickCount, setClickCount] = useState(0);
+
+  const handleClick = useCallback(() => {
+    if (clickCount < 1) {
+      setSpinning(true);
+      setClickCount(1);
+      setTimeout(() => {
+        setSpinning(false);
+      }, 1500);
+    } else {
+      onClick();
+    }
+  }, [clickCount, onClick]);
+
+  return (
+    <div className="relative" style={{ minHeight: 60 }}>
+      <AnimatePresence>
+        {spinning && (
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: -20 }}
+            exit={{ opacity: 0, y: -30 }}
+            className="absolute left-1/2 -translate-x-1/2 -top-6 text-rose-500 text-xs font-medium whitespace-nowrap z-10"
+          >
+            Windut pusing!
+          </motion.p>
+        )}
+      </AnimatePresence>
+      <motion.button
+        animate={{
+          rotate: spinning ? [0, 360, 720, 1080] : 0,
+          scale: spinning ? [1, 0.8, 1.1, 1] : 1,
+        }}
+        transition={{
+          duration: spinning ? 1.5 : 0.3,
+          ease: "easeInOut",
+        }}
+        whileTap={{ scale: 0.95 }}
+        onClick={handleClick}
+        className="px-8 py-3 bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-lg shadow-gray-300/40 rounded-full font-semibold cursor-pointer"
+      >
+        {spinning ? "AAAAAA!" : label}
+      </motion.button>
+    </div>
+  );
+}
+
+function ZigmaButton({
+  label,
+  onClick,
+}: {
+  label: string;
+  onClick: () => void;
+}) {
+  const [phase, setPhase] = useState(0);
+
+  const handleClick = useCallback(() => {
+    if (phase < 2) {
+      setPhase((prev) => prev + 1);
+    } else {
+      onClick();
+    }
+  }, [phase, onClick]);
+
+  const texts = [label, "Zigma gak peduli", "OK bye."];
+  const colors = [
+    "from-gray-400 to-gray-500",
+    "from-gray-600 to-gray-700",
+    "from-gray-800 to-black",
+  ];
+
+  return (
+    <div className="relative" style={{ minHeight: 60 }}>
+      <AnimatePresence>
+        {phase > 0 && (
+          <motion.p
+            key={phase}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: -20 }}
+            exit={{ opacity: 0 }}
+            className="absolute left-1/2 -translate-x-1/2 -top-6 text-rose-500 text-xs font-medium whitespace-nowrap z-10"
+          >
+            {phase === 1 ? "Zigma gak butuh validasi" : "Zigma walk away..."}
+          </motion.p>
+        )}
+      </AnimatePresence>
+      <motion.button
+        animate={{
+          x: phase === 2 ? [-5, 5, -3, 3, 0] : 0,
+        }}
+        transition={{ duration: 0.4 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={handleClick}
+        className={`px-8 py-3 bg-gradient-to-r ${colors[phase]} text-white shadow-lg rounded-full font-semibold cursor-pointer transition-all`}
+      >
+        {texts[phase]}
       </motion.button>
     </div>
   );
@@ -163,12 +364,14 @@ function ProfileCard({
   onSwipeRight,
   isFinal,
   direction,
+  rejectReaction,
 }: {
   profile: Profile;
   onSwipeLeft: () => void;
   onSwipeRight: () => void;
   isFinal: boolean;
   direction: "left" | "right" | null;
+  rejectReaction: RejectReaction | null;
 }) {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 0, 200], [-15, 0, 15]);
@@ -181,31 +384,61 @@ function ProfileCard({
       const vel = 500;
 
       if (info.offset.x > threshold || info.velocity.x > vel) {
-        if (isFinal) {
-          onSwipeRight();
-        }
+        if (isFinal) onSwipeRight();
       } else if (info.offset.x < -threshold || info.velocity.x < -vel) {
-        if (!isFinal) {
-          onSwipeLeft();
-        }
+        if (!isFinal) onSwipeLeft();
       }
     },
     [isFinal, onSwipeLeft, onSwipeRight]
   );
 
-  const exitX = direction === "right" ? 400 : -400;
-  const exitRotate = direction === "right" ? 25 : -25;
+  const exitVariants: Record<number, TargetAndTransition> = {
+    0: {
+      x: -400,
+      y: 200,
+      rotate: -45,
+      opacity: 0,
+      transition: { duration: 0.6, ease: "easeIn" },
+    },
+    1: {
+      x: -300,
+      rotate: [0, 180, 360, 540],
+      opacity: 0,
+      scale: 0.3,
+      transition: { duration: 0.8, ease: "easeIn" },
+    },
+    2: {
+      x: -500,
+      y: -50,
+      rotate: 0,
+      opacity: 0,
+      scale: 0.9,
+      transition: { duration: 1.0, ease: [0.25, 0.1, 0.25, 1] },
+    },
+    3: {
+      x: 400,
+      opacity: 0,
+      rotate: 25,
+      transition: { duration: 0.4, ease: "easeIn" },
+    },
+  };
+
+  const profileIndex = PROFILES_DATA.findIndex(
+    (p) => p.name === profile.name
+  );
+  const exitAnim =
+    direction !== null
+      ? exitVariants[profileIndex] || { x: -400, opacity: 0 }
+      : {};
+
+  const isShowingReaction =
+    rejectReaction?.isActive && rejectReaction.profileIndex === profileIndex;
 
   return (
     <motion.div
       initial={{ scale: 0.9, opacity: 0, y: 30 }}
       animate={{ scale: 1, opacity: 1, y: 0 }}
-      exit={{
-        x: exitX,
-        opacity: 0,
-        rotate: exitRotate,
-        transition: { duration: 0.4, ease: "easeIn" },
-      }}
+      exit={exitAnim}
       transition={{ type: "spring", stiffness: 200, damping: 20 }}
       style={{ x, rotate }}
       drag="x"
@@ -218,23 +451,12 @@ function ProfileCard({
         className="relative rounded-3xl overflow-hidden shadow-2xl"
         style={{ aspectRatio: "3/4" }}
       >
-        {/* Card background */}
-        {profile.image ? (
-          <img
-            src={profile.image}
-            alt={profile.name}
-            className="absolute inset-0 w-full h-full object-cover"
-            draggable={false}
-          />
-        ) : (
-          <div
-            className={`absolute inset-0 bg-gradient-to-br ${profile.color} flex items-center justify-center`}
-          >
-            <span className="text-8xl sm:text-9xl font-bold text-white/30 select-none">
-              {profile.emoji}
-            </span>
-          </div>
-        )}
+        <img
+          src={profile.image}
+          alt={profile.name}
+          className="absolute inset-0 w-full h-full object-cover"
+          draggable={false}
+        />
 
         {/* Swipe indicators */}
         <motion.div
@@ -253,6 +475,33 @@ function ProfileCard({
             LEWAT
           </span>
         </motion.div>
+
+        {/* Reject reaction overlay */}
+        <AnimatePresence>
+          {isShowingReaction && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.5 }}
+              className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center z-30"
+            >
+              <motion.span
+                animate={{ scale: [1, 1.3, 1], rotate: [0, -10, 10, 0] }}
+                transition={{ duration: 0.5 }}
+                className="text-5xl sm:text-6xl mb-2 select-none"
+              >
+                {profile.rejectEmoji}
+              </motion.span>
+              <motion.p
+                initial={{ y: 10 }}
+                animate={{ y: 0 }}
+                className="text-white font-bold text-lg sm:text-xl text-center px-4"
+              >
+                {profile.rejectMessage}
+              </motion.p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
@@ -282,7 +531,7 @@ function ProfileCard({
           )}
         </div>
 
-        {/* "Verified" badge for target */}
+        {/* Verified badge for target */}
         {profile.isTarget && (
           <motion.div
             initial={{ opacity: 0, scale: 0 }}
@@ -298,7 +547,20 @@ function ProfileCard({
                 clipRule="evenodd"
               />
             </svg>
-            Terverifikasi
+            CEO Terverifikasi
+          </motion.div>
+        )}
+
+        {/* Funny badge for match3 (Zigma) */}
+        {profileIndex === 2 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.6, type: "spring" }}
+            className="absolute top-4 left-4 bg-gray-800/90 text-white text-xs px-2.5 py-1 rounded-full z-20"
+            style={{ backdropFilter: "blur(4px)" }}
+          >
+            Sigma Male
           </motion.div>
         )}
       </div>
@@ -307,40 +569,36 @@ function ProfileCard({
 }
 
 export default function SwipeGame() {
-  const { targetPhoto, setCurrentPhase } = useGame();
+  const { setCurrentPhase } = useGame();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showIntro, setShowIntro] = useState(true);
   const [rejectCount, setRejectCount] = useState(0);
   const [showTransition, setShowTransition] = useState(false);
-  const [exitDirection, setExitDirection] = useState<"left" | "right" | null>(
+  const [exitDirection, setExitDirection] = useState<
+    "left" | "right" | null
+  >(null);
+  const [rejectReaction, setRejectReaction] = useState<RejectReaction | null>(
     null
   );
 
-  const profiles: Profile[] = [
-    ...FAKE_PROFILES.map((p) => ({ ...p, isTarget: false })),
-    {
-      name: "Seseorang yang Spesial",
-      age: 23,
-      bio: "Seseorang yang udah curi perhatianmu sejak lama... Kamu yakin mau nolak?",
-      color: "from-rose-400 to-pink-500",
-      emoji: "?",
-      isTarget: true,
-      image: targetPhoto,
-    },
-  ];
-
-  const currentProfile = profiles[currentIndex];
-  const isFinalCard = currentIndex === profiles.length - 1;
+  const currentProfile = PROFILES_DATA[currentIndex];
+  const isFinalCard = currentIndex === PROFILES_DATA.length - 1;
 
   const handleReject = useCallback(() => {
     if (isFinalCard) return;
-    setExitDirection("left");
-    setRejectCount((prev) => prev + 1);
+
+    setRejectReaction({ profileIndex: currentIndex, isActive: true });
+
     setTimeout(() => {
-      setCurrentIndex((prev) => prev + 1);
-      setExitDirection(null);
-    }, 100);
-  }, [isFinalCard]);
+      setExitDirection("left");
+      setRejectCount((prev) => prev + 1);
+      setTimeout(() => {
+        setRejectReaction(null);
+        setCurrentIndex((prev) => prev + 1);
+        setExitDirection(null);
+      }, 150);
+    }, 1200);
+  }, [isFinalCard, currentIndex]);
 
   const handleAccept = useCallback(() => {
     if (!isFinalCard) return;
@@ -349,9 +607,15 @@ export default function SwipeGame() {
       setShowTransition(true);
       setTimeout(() => {
         setCurrentPhase(4);
-      }, 2000);
+      }, 2500);
     }, 400);
   }, [isFinalCard, setCurrentPhase]);
+
+  const rejectHints: Record<number, string> = {
+    1: "Mas Amba udah nangis tuh... Masih ada 2 profil lagi.",
+    2: "Windut ngambek parah! Masih ada 1 profil lagi...",
+    3: "Zigma bilang dia gak peduli (padahal sedih). Ini yang terakhir!",
+  };
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center px-4 py-6 overflow-hidden">
@@ -446,7 +710,7 @@ export default function SwipeGame() {
           </h1>
         </div>
         <p className="text-rose-400 text-xs">
-          Profil {currentIndex + 1} dari {profiles.length}
+          Profil {currentIndex + 1} dari {PROFILES_DATA.length}
         </p>
       </motion.div>
 
@@ -458,8 +722,7 @@ export default function SwipeGame() {
         className="relative w-full max-w-sm flex items-center justify-center z-10"
         style={{ height: "min(65vh, 480px)" }}
       >
-        {/* Background cards for stack effect */}
-        {currentIndex + 1 < profiles.length && (
+        {currentIndex + 1 < PROFILES_DATA.length && (
           <motion.div
             className="absolute w-[95%] rounded-3xl bg-white/40 shadow-lg"
             style={{
@@ -481,12 +744,13 @@ export default function SwipeGame() {
               onSwipeRight={handleAccept}
               isFinal={isFinalCard}
               direction={exitDirection}
+              rejectReaction={rejectReaction}
             />
           )}
         </AnimatePresence>
       </motion.div>
 
-      {/* Action buttons */}
+      {/* Action buttons - unique per profile */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{
@@ -499,10 +763,12 @@ export default function SwipeGame() {
       >
         {isFinalCard ? (
           <>
+            {/* Final card: "Tidak Tertarik" runs away */}
             <RunawayButton
-              key={`runaway-nope-${currentIndex}`}
+              key={`runaway-nope-final`}
               label="Tidak Tertarik"
               variant="not-interested"
+              messages={RUNAWAY_MESSAGES_TARGET}
             />
             <NormalButton
               label="Tertarik"
@@ -512,45 +778,63 @@ export default function SwipeGame() {
           </>
         ) : (
           <>
-            <NormalButton
-              label="Tidak Tertarik"
-              onClick={handleReject}
-              variant="not-interested"
-            />
+            {/* Each profile gets a unique reject button */}
+            {currentIndex === 0 && (
+              <ShrinkingButton
+                key="shrink-0"
+                label="Tidak Tertarik"
+                onClick={handleReject}
+              />
+            )}
+            {currentIndex === 1 && (
+              <SpinningButton
+                key="spin-1"
+                label="Tidak Tertarik"
+                onClick={handleReject}
+              />
+            )}
+            {currentIndex === 2 && (
+              <ZigmaButton
+                key="zigma-2"
+                label="Tidak Tertarik"
+                onClick={handleReject}
+              />
+            )}
             <RunawayButton
               key={`runaway-like-${currentIndex}`}
               label="Tertarik"
               variant="interested"
+              messages={[
+                "Hehe, gak bisa!",
+                "Yang bener aja!",
+                "Nggak cocok!",
+                "Cari yang lain!",
+              ]}
             />
           </>
         )}
       </motion.div>
 
-      {/* Reject counter hint */}
+      {/* Reject hints */}
       <AnimatePresence>
-        {!showIntro && rejectCount > 0 && rejectCount < 3 && (
-          <motion.p
-            key={`hint-${rejectCount}`}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="text-rose-400 text-xs mt-3 z-10"
-          >
-            Hmm, belum ketemu yang cocok ya? Masih ada{" "}
-            {3 - rejectCount} profil lagi...
-          </motion.p>
-        )}
-        {!showIntro && rejectCount === 3 && !showTransition && (
-          <motion.p
-            key="hint-final"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="text-rose-500 text-xs mt-3 z-10 font-medium"
-          >
-            Ini dia yang terakhir... Lihat baik-baik!
-          </motion.p>
-        )}
+        {!showIntro &&
+          rejectCount > 0 &&
+          rejectCount <= 3 &&
+          !rejectReaction?.isActive && (
+            <motion.p
+              key={`hint-${rejectCount}`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className={`text-xs mt-3 z-10 ${
+                rejectCount === 3
+                  ? "text-rose-500 font-medium"
+                  : "text-rose-400"
+              }`}
+            >
+              {rejectHints[rejectCount]}
+            </motion.p>
+          )}
       </AnimatePresence>
 
       {/* Transition overlay */}
@@ -581,15 +865,15 @@ export default function SwipeGame() {
               transition={{ delay: 0.5 }}
               className="text-2xl sm:text-3xl font-bold text-rose-700 mb-2"
             >
-              Kamu Tertarik!
+              Akhirnya Tertarik Juga!
             </motion.h2>
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8 }}
-              className="text-rose-400 text-sm"
+              className="text-rose-400 text-sm text-center px-4"
             >
-              Mari kita lihat apakah kalian cocok...
+              CEO Google sudah menunggumu... Mari kita lihat hasilnya!
             </motion.p>
           </motion.div>
         )}

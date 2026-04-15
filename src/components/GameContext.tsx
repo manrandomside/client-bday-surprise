@@ -8,6 +8,7 @@ interface GameState {
   currentPhase: Phase;
   uploadedPhoto: string | null;
   targetPhoto: string;
+  targetName: string;
   setCurrentPhase: (phase: Phase) => void;
   setUploadedPhoto: (photo: string | null) => void;
 }
@@ -23,7 +24,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       value={{
         currentPhase,
         uploadedPhoto,
-        targetPhoto: "/game-photos/1.jpeg",
+        targetPhoto: "/game-photos/match4.png",
+        targetName: "Dian Nafisa",
         setCurrentPhase,
         setUploadedPhoto,
       }}
