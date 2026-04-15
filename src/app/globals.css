@@ -1,12 +1,24 @@
 @import "tailwindcss";
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #fff1f2 100%);
+  background-attachment: fixed;
   color: #1f2937;
   min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 ::selection {
   background-color: #fda4af;
   color: white;
+}
+
+* {
+  -webkit-user-drag: none;
 }

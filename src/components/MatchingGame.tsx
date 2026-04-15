@@ -58,6 +58,8 @@ export default function MatchingGame() {
   const [particles, setParticles] = useState<MatchParticle[]>([]);
   const [gameComplete, setGameComplete] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
+  const [mismatchIndices, setMismatchIndices] = useState<number[]>([]);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
   const particleIdRef = useRef(0);
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -72,6 +74,20 @@ export default function MatchingGame() {
       isMatched: false,
     }));
     setCards(initialCards);
+
+    let loaded = 0;
+    imageIndices.forEach((idx) => {
+      const img = new Image();
+      img.onload = () => {
+        loaded++;
+        if (loaded === TOTAL_PAIRS) setImagesLoaded(true);
+      };
+      img.onerror = () => {
+        loaded++;
+        if (loaded === TOTAL_PAIRS) setImagesLoaded(true);
+      };
+      img.src = `/game-photos/${idx}.jpeg`;
+    });
   }, []);
 
   const spawnParticles = useCallback((x: number, y: number) => {
@@ -151,7 +167,9 @@ export default function MatchingGame() {
             }
           }, 500);
         } else {
+          setMismatchIndices([firstIdx, secondIdx]);
           setTimeout(() => {
+            setMismatchIndices([]);
             setCards((prev) =>
               prev.map((card, i) =>
                 i === firstIdx || i === secondIdx
@@ -218,19 +236,19 @@ export default function MatchingGame() {
               transition={{ delay: 1.1 }}
               className="text-rose-500 mb-8 text-center px-4 max-w-sm"
             >
-              Temukan semua pasangan kartu yang cocok untuk melanjutkan ke
-              tahap berikutnya
+              Temukan semua pasangan kartu yang cocok untuk melanjutkan ke tahap
+              berikutnya
             </motion.p>
             <motion.button
               initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
+              animate={{ opacity: imagesLoaded ? 1 : 0.5, scale: 1 }}
               transition={{ delay: 1.5 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowIntro(false)}
+              whileHover={imagesLoaded ? { scale: 1.05 } : {}}
+              whileTap={imagesLoaded ? { scale: 0.95 } : {}}
+              onClick={() => imagesLoaded && setShowIntro(false)}
               className="px-8 py-3 bg-gradient-to-r from-rose-400 to-pink-500 text-white rounded-full font-semibold text-lg shadow-lg shadow-rose-300/50 cursor-pointer"
             >
-              Mulai Bermain
+              {imagesLoaded ? "Mulai Bermain" : "Memuat..."}
             </motion.button>
           </motion.div>
         )}
@@ -241,7 +259,7 @@ export default function MatchingGame() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: showIntro ? 0 : 1, y: showIntro ? -20 : 0 }}
         transition={{ delay: 0.3 }}
-        className="text-center mb-4 sm:mb-6 z-10"
+        className="text-center mb-4 sm:mb-6 z-10 mt-8"
       >
         <h1 className="text-xl sm:text-2xl font-bold text-rose-700 mb-1">
           Temukan Pasangannya!
@@ -299,22 +317,41 @@ export default function MatchingGame() {
           if (!card) return <div key={`missing-${gridIndex}`} />;
 
           const isFlipped = card.isFlipped || card.isMatched;
+          const isMismatch = mismatchIndices.includes(cardIndex);
 
           return (
             <motion.div
               key={card.id}
+              initial={{ opacity: 0, scale: 0, rotateY: 90 }}
+              animate={{
+                opacity: showIntro ? 0 : 1,
+                scale: showIntro ? 0 : 1,
+                rotateY: 0,
+                x: isMismatch ? [0, -4, 4, -3, 3, 0] : 0,
+              }}
+              transition={{
+                delay: showIntro ? 0 : 0.3 + cardIndex * 0.03,
+                type: "spring",
+                stiffness: 200,
+                damping: 15,
+                x: { duration: 0.4 },
+              }}
               className="relative cursor-pointer"
               style={{ perspective: 600, aspectRatio: "1" }}
-              whileHover={!isFlipped ? { scale: 1.08 } : {}}
+              whileHover={!isFlipped ? { scale: 1.08, zIndex: 10 } : {}}
               whileTap={!isFlipped ? { scale: 0.95 } : {}}
               onClick={() => handleCardClick(cardIndex)}
-              layout
             >
               <motion.div
                 className="w-full h-full relative"
                 style={{ transformStyle: "preserve-3d" }}
                 animate={{ rotateY: isFlipped ? 180 : 0 }}
-                transition={{ duration: 0.5, type: "spring", stiffness: 300, damping: 25 }}
+                transition={{
+                  duration: 0.5,
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 25,
+                }}
               >
                 {/* Card back */}
                 <div
@@ -339,7 +376,9 @@ export default function MatchingGame() {
                     transform: "rotateY(180deg)",
                     boxShadow: card.isMatched
                       ? "0 0 12px rgba(244, 63, 94, 0.5)"
-                      : "0 2px 8px rgba(0, 0, 0, 0.15)",
+                      : isMismatch
+                        ? "0 0 12px rgba(239, 68, 68, 0.6)"
+                        : "0 2px 8px rgba(0, 0, 0, 0.15)",
                   }}
                 >
                   <img
@@ -368,6 +407,14 @@ export default function MatchingGame() {
                       </motion.span>
                     </motion.div>
                   )}
+                  {isMismatch && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: [0, 0.4, 0] }}
+                      transition={{ duration: 0.6 }}
+                      className="absolute inset-0 bg-red-500/30"
+                    />
+                  )}
                 </div>
               </motion.div>
             </motion.div>
@@ -378,7 +425,11 @@ export default function MatchingGame() {
       {/* Match particles */}
       <AnimatePresence>
         {particles.map((particle) => (
-          <MatchParticleEffect key={particle.id} x={particle.x} y={particle.y} />
+          <MatchParticleEffect
+            key={particle.id}
+            x={particle.x}
+            y={particle.y}
+          />
         ))}
       </AnimatePresence>
 
@@ -415,14 +466,21 @@ export default function MatchingGame() {
             >
               Kamu berhasil menyelesaikannya dalam {moves} langkah!
             </motion.p>
-            <motion.p
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.2 }}
-              className="text-rose-400 text-sm mt-4"
+              className="flex items-center gap-2 mt-4"
             >
-              Mempersiapkan tahap selanjutnya...
-            </motion.p>
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                className="w-4 h-4 border-2 border-rose-300 border-t-rose-500 rounded-full"
+              />
+              <span className="text-rose-400 text-sm">
+                Mempersiapkan tahap selanjutnya...
+              </span>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
