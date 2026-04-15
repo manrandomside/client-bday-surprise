@@ -148,7 +148,7 @@ export default function PhotoUpload() {
               transition={{ delay: 0.5 }}
               className="text-2xl sm:text-3xl font-bold text-rose-700 mb-3"
             >
-              Saatnya Selfie!
+              Hai Cantik!
             </motion.h1>
 
             <motion.p
@@ -157,7 +157,7 @@ export default function PhotoUpload() {
               transition={{ delay: 0.7 }}
               className="text-rose-500 mb-2 leading-relaxed"
             >
-              Sebelum melanjutkan ke tahap berikutnya, kami butuh foto terbaikmu.
+              Sebelum lanjut, kami butuh foto kamu yang paling cantik dan paling memukau. Pilih yang bikin semua orang terpana ya!
             </motion.p>
 
             <motion.p
@@ -166,7 +166,7 @@ export default function PhotoUpload() {
               transition={{ delay: 0.9 }}
               className="text-rose-400 text-sm mb-8"
             >
-              Tenang, fotomu akan digunakan untuk sesuatu yang spesial!
+              Psst... fotomu akan dipakai untuk sesuatu yang sangat spesial nanti!
             </motion.p>
 
             <motion.button
@@ -199,7 +199,7 @@ export default function PhotoUpload() {
               transition={{ delay: 0.2 }}
               className="text-xl sm:text-2xl font-bold text-rose-700 mb-2 text-center"
             >
-              Unggah Fotomu
+              Tunjukkan Sisi Tercantikmu
             </motion.h2>
 
             <motion.p
@@ -208,7 +208,7 @@ export default function PhotoUpload() {
               transition={{ delay: 0.4 }}
               className="text-rose-400 text-sm mb-6 text-center"
             >
-              Pilih foto terbaikmu atau seret ke area di bawah
+              Pilih foto yang paling bikin kamu bangga!
             </motion.p>
 
             {/* Drop zone */}
@@ -350,7 +350,7 @@ export default function PhotoUpload() {
               transition={{ delay: 0.2 }}
               className="text-xl sm:text-2xl font-bold text-rose-700 mb-1 text-center"
             >
-              Tampak Sempurna!
+              Cantik Banget!
             </motion.h2>
 
             <motion.p
@@ -359,7 +359,7 @@ export default function PhotoUpload() {
               transition={{ delay: 0.4 }}
               className="text-rose-400 text-sm mb-6 text-center"
             >
-              Pastikan ini foto terbaikmu ya
+              Udah pasti bikin semua orang iri deh
             </motion.p>
 
             {/* Photo preview */}
